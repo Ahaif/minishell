@@ -54,13 +54,22 @@ void parser_and_execute(t_cmd *cmd)
     char *str;
     char **args;
 
+    //perror("PASS\n");
+    // write(1, "wqq\n", 4);
     str = readline("-> minishell : ");
+    // str = "wc < test.txt < test1.txt > test2.txt >> test3.txt";
     // str = parse_line(str);   // you sould handle back slash
     if (str[0] == '\0')
         return;
     add_history(str);
     if (cmd_contain(str, ';'))
         handle_multiple_cmd(str, cmd); // hna ila kano cmd bzaf fihom ";"
+    /*else if (str_str(str, "<<"))
+        handle_heredoc(str);*/
+    else if ((not_contain(str, '>') || cmd_contain(str, '<') || str_str(str, ">>") || str_str(str, "<<")) && (!cmd_contain(str, '|')))
+    {
+        handlle_redirections(str);
+    }
     else if (cmd_contain(str, '|'))
         handlle_pipe(str);
     else

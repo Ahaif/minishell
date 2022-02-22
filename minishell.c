@@ -16,8 +16,8 @@
 
 int main(int argc, char **argv)
 {
-    t_cmd	cmd;
-	pid_t	pid;
+    t_cmd cmd;
+    pid_t pid;
 
     while (1)
     {
