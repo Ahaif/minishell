@@ -6,12 +6,11 @@
 /*   By: aqadil <aqadil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/18 20:39:24 by aqadil            #+#    #+#             */
-/*   Updated: 2022/01/18 20:39:32 by aqadil           ###   ########.fr       */
+/*   Updated: 2022/02/14 19:54:19 by aqadil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
-
 
 static int	free_thing(char **tab, int index)
 {
@@ -51,6 +50,8 @@ static char	*create_word(const char *s, int start, int end)
 	i = 0;
 	word_len = end - start;
 	word = (char *)malloc((word_len * sizeof(char )) + 1);
+	if (word == NULL)
+		return (NULL);
 	while (start < end)
 		word[i++] = s[start++];
 	word[i] = '\0';

@@ -1,22 +1,21 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_strstr.c                                        :+:      :+:    :+:   */
+/*   str_str.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ahaifoul <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: aqadil <aqadil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/08/11 15:35:48 by ahaifoul          #+#    #+#             */
-/*   Updated: 2021/08/12 09:07:59 by ahaifoul         ###   ########.fr       */
+/*   Updated: 2022/02/23 01:51:55 by aqadil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
-#include <stdio.h>
-#include <string.h>
+
 #include "minishell.h"
 
-char *str_str(char *str, char *to_find)
+char	*str_str(char *str, char *to_find)
 {
-	int i;
-	int j;
+	int	i;
+	int	j;
 
 	i = 0;
 	if (!(*to_find))

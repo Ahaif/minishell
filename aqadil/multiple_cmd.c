@@ -6,66 +6,32 @@
 /*   By: aqadil <aqadil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/18 21:30:10 by aqadil            #+#    #+#             */
-/*   Updated: 2022/01/19 17:47:46 by aqadil           ###   ########.fr       */
+/*   Updated: 2022/02/12 01:25:26 by aqadil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-char    *path_search(char *cmd)
+void	handle_multiple_cmd(char *str, char **envp)
 {
-    char    **str;
-    char    *env;
-    char    *path;
-    char    *path_search;
-    int i = 0;
+	char	**cmd_split;
+	int		i;
 
-    env = getenv("PATH");
-    str = ft_split(env, ':');
-    while (str[i])
-    {
-        path = ft_strjoin(str[i], "/");
-        path_search = ft_strjoin(path, cmd);
-        if (access(path_search, X_OK) == 0)
-            return (path);
-        i++;
-    }
-    return (NULL);
+	i = 0;
+	cmd_split = ft_split(str, ';');
+	while (cmd_split[i])
+	{
+		execute_single_cmd_handler(cmd_split[i], envp);
+		i++;
+	}
 }
 
-void    execute_single_cmd_handler(char *line)
+int	arg_count(char **args)
 {
-    char    **args;
-    char    *cmd;
-    char    *path;
-    
-    args = ft_split(line, ' ');
-    cmd = args[0];
-    path = path_search(cmd);
-    if (ft_strcmp(cmd, "cd") == 0)
-        cd(args[1]);
-    else if (ft_strcmp(cmd, "echo") == 0)
-    {
-        // printf("|%s|\n", line);
-        echo(line);
-    }
-    else if (cmd_contain(line, '/'))
-        execute_single_cmd("", cmd, args);
-    else
-        execute_single_cmd(path, cmd, args);
-}
+	int	i;
 
-void    execute_single_cmd(char *path, char *cmd, char **args)
-{
-    pid_t   pid;
-
-    cmd = ft_strjoin(path, cmd);
-    pid = fork();
-    if (pid == 0)
-    {
-        if (execve(cmd, args, NULL))
-            printf("Error Has Ocurred\n");
-        exit(0);
-    }
-    wait(NULL);
+	i = 0;
+	while (args[i])
+		i++;
+	return (i);
 }

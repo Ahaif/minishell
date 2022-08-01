@@ -6,130 +6,117 @@
 /*   By: aqadil <aqadil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/19 00:21:53 by aqadil            #+#    #+#             */
-/*   Updated: 2022/01/19 17:58:26 by aqadil           ###   ########.fr       */
+/*   Updated: 2022/02/19 15:36:47 by aqadil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../aqadil/minishell.h"
 
-char *double_quots_check(char *str)
+int	place_help_s_q_3(char **args, int i, char *str)
 {
-    char    *cmd;
-    
-    if ((str[0] == '\"' && str[ft_strlen(str) - 3] == '\"'))
-        cmd = ft_strtrim(str, "\"");
-    else if ((str[0] == '\'' && str[ft_strlen(str) - 1] == '\''))
-        cmd = ft_strtrim(str, "\'");
-    else
-        cmd = str;
-    return (cmd);
+	int	start;
+	int	end;
+
+	start = i - 1;
+	while (str[i + 1] != '\'' && str[i + 1]
+		!= '\"' && str[i + 1] != ' ' && str[i + 1])
+		i++;
+	end = i;
+	place_arg(args, str, start, end);
+	return (i);
 }
 
-
-void    handle_echo(char *str)
+char	**bring_args_in(char *str)
 {
-    int i;
+	int		count;
+	char	**args;
+	t_vars	var;
 
-    i = 0;
-    str = double_quots_check(str);
-    str = ft_strjoin(str, " \n");
-    while (str[i])
-    {
-        if (str[i] == '\\')
-        {
-            write(1, &str[i], 1);
-            i++;
-        }
-        else
-            write(1, &str[i], 1);
-        i++;
-    }
+	var_init(&var);
+	count = line_arg_count(str);
+	args = malloc((count + 1) * sizeof(char *));
+	if (args == NULL)
+		return (NULL);
+	args[0] = 0;
+	while (str[var.i])
+	{
+		if (str[var.i] == '\'' && var.double_quote == 0)
+			var.i = place_help_s_q_1(args, var.i, str);
+		if (str[var.i] == '\"' && var.single_quote == 0)
+			var.i = place_help_s_q_2(args, var.i, str);
+		if (var.single_quote == 0 && var.double_quote == 0 && str[var.i]
+			!= '\'' & str[var.i] != '\"' && str[var.i] != ' ')
+			var.i = place_help_s_q_3(args, var.i, str);
+		var.i++;
+	}
+	return (args);
 }
 
-int check_valid_echo(char *str)
+char	*remove_echo(char *str, int option_check)
 {
-    int checker;
-    int doubleQ;
-    int singleQ;
-    int i;
+	char	*result;
+	int		i;
+	char	*trimed_result;
 
-    i = 0;
-    checker = 1;
-    doubleQ = 0;
-    singleQ = 0;
-    // printf("%c", str[0]);
-    // exit(1);
-    if (str[0] != str[ft_strlen(str) - 1])
-        return (0);
-    while (str[i])
-    {
-        if (str[0] == '\'' && str[i] == '\'' && str[i - 1] != '\\')
-            singleQ++;
-        else if (str[0] == '\"' && str[i] == '\"' && str[i - 1] != '\\')
-            doubleQ++;
-        i++;
-    }
-    if (doubleQ % 2 != 0 && doubleQ != 0)
-    {
-        return (0);
-    }
-    if (singleQ % 2 != 0 && singleQ != 0)
-        return (0);
-    return (1);
+	i = -1;
+	if (str[0] == '\"' || str[0] == '\'')
+		result = ft_substr(str, 6, ft_strlen(str) - 4);
+	else
+		result = ft_substr(str, 4, ft_strlen(str) - 4);
+	trimed_result = ft_strtrim(result, " ");
+	free(result);
+	if (option_check == 1)
+	{
+		trimed_result = handle_option_check(trimed_result);
+	}
+	return (trimed_result);
 }
 
-char    *remove_echo_and_space(char *line)
+char	*handle_option_check(char *result)
 {
-    char **result;
-    char    *args;
-    int i;
-    
-    i = 0;
-    result = ft_split(line, ' ');
-    args = result[1];
-    while (result[i])
-    {
-        if (i > 0)
-        {
-            args = ft_strjoin(args, " ");
-            args = ft_strjoin(args, result[i]);
-        }
-        i++;
-    }
-    return (args);
+	int		i;
+	char	*result2;
+	char	*trimed_result;
+
+	result2 = result;
+	i = -1;
+	while (result2[++i])
+	{
+		if (result2[i] == '-' && result2[i + 1] == 'n')
+		{
+			if (result2[i + 2] == '-')
+				break ;
+			while (result2[i + 1] == 'n')
+				i++;
+			result2 = ft_substr(result2, i + 2, ft_strlen(result2) - 2);
+			i = 0;
+		}
+	}
+	trimed_result = ft_strtrim(result2, " ");
+	free(result2);
+	free(result);
+	return (trimed_result);
 }
 
-char    *handle_line(char *line)
+void	my_echo(char *arg)
 {
-    int i;
-    char *cmd;
+	char	*str;
+	int		option_check;
+	char	*arg_new;
 
-    i = 0;
-    while (line[i])
-    {
-        if (line[i] == '\'' || line[i] == '\"')
-            break;
-        i++;
-    }
-    if (i == ft_strlen(line))
-    {
-        return (remove_echo_and_space(line));
-    }
-    cmd = ft_solution(line, i);
-    return (cmd);
-}
-
-void    echo(char *arg)
-{
-    char *str;
-    int checker;
-
-    str = handle_line(arg);
-    printf("|%s|\n", str);
-    exit(1);
-    checker = check_valid_echo(arg);
-    if (checker == 1)
-        handle_echo(arg);
-    else
-        write(1, "echo : error has ocurred\n", 26);
+	arg_new = arg;
+	option_check = check_echo_option(arg_new);
+	str = remove_echo(arg_new, option_check);
+	if (line_arg_count(str) == 0)
+	{
+		if (str[0] == '\0' && option_check == 0)
+			write(1, "\n", 1);
+		else if (str[0] == '\0' && option_check == 1)
+			;
+		else
+			write(1, "echo: Multiline error\n", 24);
+		return ;
+	}
+	exe_echo(str, option_check);
+	free(str);
 }

@@ -1,22 +1,23 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   my_split.c                                         :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: aqadil <aqadil@student.42.fr>              +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2022/02/23 02:17:13 by aqadil            #+#    #+#             */
+/*   Updated: 2022/02/23 02:46:22 by aqadil           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "./aqadil/minishell.h"
-
-
-static int	free_thing(char **tab, int index)
-{
-	while (index >= 0)
-	{
-		free(tab[index]);
-		index--;
-	}
-	return (0);
-}
 
 static int	count_word(const char *s, char *set)
 {
 	int	count;
-    int i;
+	int	i;
 
-    i = 0;
+	i = 0;
 	count = 0;
 	while (s[i])
 	{
@@ -47,34 +48,30 @@ static char	*create_word(const char *s, int start, int end)
 
 static int	fill_the_splited_array(char **str, const char *s, char *set)
 {
-	int		start;
-	int		end;
-	int		i;
-	int		k;
+	t_vars	var;
 
-	i = 0;
-	k = 0;
-	while (s[i])
+	new_var_init(&var);
+	while (s[var.i])
 	{
-		if ((s[i] != set[0] && s[i + 1] != set[1]) || (s[i] != set[0] && s[i + 1] == set[1] && s[i + 2] != set[1]))
+		if ((s[var.i] != set[0] && s[var.i + 1] != set[1])
+			|| (s[var.i] != set[0] && s[var.i + 1] == set[1]
+				&& s[var.i + 2] != set[1]))
 		{
-			start = i;
-			while ((s[i]) && ((s[i] != set[0] && s[i + 1] != set[1]) || (s[i] != set[0] && s[i + 1] == set[1] && s[i + 2] != set[1]) || (s[i] == set[0] && s[i + 1] != set[1])))
-			{
-				if (s[i + 1] != set[0] && s[i + 2] == set[1])
-					i++;
-				i++;
-			}
-			end = i;
-			str[k] = create_word(s, start, end);
-			if ((str[k]) == NULL)
-				return (free_thing(str, k));
-			k++;
+			var.start = var.i;
+			while ((s[var.i]) && ((s[var.i] != set[0] && s[var.i + 1] != set[1])
+					|| (s[var.i] != set[0] && s[var.i + 1] == set[1]
+						&& s[var.i + 2] != set[1])
+					|| (s[var.i] == set[0] && s[var.i + 1] != set[1])))
+				if (var.i++ && (s[var.i + 1] != set[0]
+						&& s[var.i + 2] == set[1]))
+					var.i++;
+			var.end = var.i;
+			str[var.k++] = create_word(s, var.start, var.end);
 		}
 		else
-			i++;
+			var.i++;
 	}
-	str[k] = 0;
+	str[var.k] = 0;
 	return (1);
 }
 
@@ -90,17 +87,7 @@ char	**ft_split22(char *s, char *set)
 	if (str == NULL)
 		return (NULL);
 	checker = fill_the_splited_array(str, s, set);
-	
 	if (checker == 0)
 		return (NULL);
 	return (str);
 }
-
-// int main()
-// {
-// 	char **str = ft_split22("ls > test.txt >> test1.txt", ">>");
-
-// 	int i = 0;
-// 	while (str[i])
-// 		printf("%s\n", str[i++]);
-// }

@@ -6,80 +6,89 @@
 /*   By: aqadil <aqadil@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/18 20:25:21 by aqadil            #+#    #+#             */
-/*   Updated: 2022/01/19 16:19:36 by aqadil           ###   ########.fr       */
+/*   Updated: 2022/02/23 03:22:01 by aqadil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-int cmd_contain(char *str, char c)
+int	cmd_contain(char *str, char c)
 {
-    while (*str)
-    {
-        if (*str == c)
-            return (1);
-        str++;
-    }
-    return (0);
+	while (*str)
+	{
+		if (*str == c)
+			return (1);
+		str++;
+	}
+	return (0);
 }
 
-void handle_multiple_cmd(char *str, t_cmd *cmd)
+int	pipe_contain(char *str, char c)
 {
-    char **cmd_split;
-    int i = 0;
-
-    cmd_split = ft_split(str, ';');
-    while (cmd_split[i])
-    {
-        execute_single_cmd_handler(cmd_split[i]);
-        i++;
-    }
+	while (*str)
+	{
+		if (*str == c && *(++str) != '|')
+			return (1);
+		str++;
+	}
+	return (0);
 }
 
-void handle_absolute_path(t_cmd *cmd)
+void	handle_absolute_path(char *cmd, char **args)
 {
-    pid_t pid;
+	char	*result;
 
-    pid = fork();
-    if (pid == 0)
-    {
-        if (execv(cmd->cmd, cmd->args))
-            printf("An Error Has ocurred\n");
-        exit(0);
-    }
+	result = handle_quotes(cmd);
+	execute_single_cmd(result, "", args);
 }
 
-void parser_and_execute(t_cmd *cmd)
+void	parser_and_execute(char *str)
 {
-    char *str;
-    char **args;
+	char	*trimed_str;
 
-    //perror("PASS\n");
-    // write(1, "wqq\n", 4);
-    str = readline("-> minishell : ");
-    // str = "wc < test.txt < test1.txt > test2.txt >> test3.txt";
-    // str = parse_line(str);   // you sould handle back slash
-    if (str[0] == '\0')
-        return;
-    add_history(str);
-    if (cmd_contain(str, ';'))
-        handle_multiple_cmd(str, cmd); // hna ila kano cmd bzaf fihom ";"
-    /*else if (str_str(str, "<<"))
-        handle_heredoc(str);*/
-    else if ((not_contain(str, '>') || cmd_contain(str, '<') || str_str(str, ">>") || str_str(str, "<<")) && (!cmd_contain(str, '|')))
-    {
-        handlle_redirections(str);
-    }
-    else if (cmd_contain(str, '|'))
-        handlle_pipe(str);
-    else
-    {
-        args = ft_split(str, ' ');
-        cmd->cmd = args[0];
-        cmd->args = &args[0];
-        if (cmd_contain(cmd->cmd, '/'))
-            handle_absolute_path(cmd); // hna l absolut path
-        else
-            execute_single_cmd_handler(str); // hna ghir command wehda
-    }
+	if (str == NULL)
+		ctrl_d_handler(1);
+	trimed_str = ft_strtrim(str, " ");
+	if (trimed_str[0] == '\0')
+		return ;
+	if (!str_str(str, "<<"))
+		add_history(trimed_str);
+	if ((not_contain(str, '>') || cmd_contain(str, '<')
+			|| str_str(str, ">>") || str_str(str, "<<"))
+		&& (!cmd_contain(str, '|')))
+		handlle_redirections(str);
+	else if (pipe_contain(str, '|'))
+		handlle_pipe(str);
+	else if (str_str(str, "<<"))
+		return (handlle_redirections(str));
+	else
+		execute_handler(trimed_str);
+	free(str);
+	free(trimed_str);
+}
+
+void	execute_handler(char *str)
+{
+	char	**args;
+	char	*cmd;
+	int		i;
+
+	i = 0;
+	args = bring_args_in(str);
+	cmd = args[0];
+	cmd = handle_quotes(cmd);
+	if (cmd == NULL)
+		return ;
+	while (args[i])
+	{
+		args[i] = handle_quotes(args[i]);
+		if (args[i] == NULL)
+			return ;
+		i++;
+	}
+	if (cmd_contain(cmd, '/'))
+		handle_absolute_path(cmd, args);
+	else
+		execute_single_cmd_handler(str, g_env_var.env);
+	free_double_char(args);
 }
